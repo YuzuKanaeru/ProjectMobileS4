@@ -1,8 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/model/api_service.dart';
+import 'package:flutter_app/model/user.dart';
 import 'package:flutter_app/pages/dashboard.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
+  @override
+  _LoginState createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  final TextEditingController _nisNipController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final ApiService apiService = ApiService();
+
+  Future<void> _login() async {
+    final String nisNip = _nisNipController.text;
+    final String password = _passwordController.text;
+
+    User? user = await apiService.login(nisNip, password);
+
+    if (user != null) {
+      _showAlertDialog('Login Berhasil', 'Selamat datang, ${user.namaLengkap}!', true);
+    } else {
+      _showAlertDialog('Login Gagal', 'Periksa kembali NIS/NIP dan Password.', false);
+    }
+  }
+
+  void _showAlertDialog(String title, String message, bool isSuccess) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (isSuccess) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Dashboard()),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,6 +151,7 @@ class Login extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.0),
                       child: TextField(
+                        controller: _nisNipController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: 'Masukkan Nomer Induk Siswa',
@@ -147,6 +198,7 @@ class Login extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.0),
                       child: TextField(
+                        controller: _passwordController,
                         obscureText: true,
                         decoration: InputDecoration(
                           border: InputBorder.none,
@@ -158,12 +210,7 @@ class Login extends StatelessWidget {
                 ),
               ),
               GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Dashboard()),
-                  );
-                },
+                onTap: _login,
                 child: Container(
                   margin: EdgeInsets.fromLTRB(0, 0, 0, 125),
                   decoration: BoxDecoration(
@@ -183,8 +230,7 @@ class Login extends StatelessWidget {
                     child: Center(
                       child: Text(
                         'Login',
-                        style: GoogleFonts.getFont(
-                          'Poppins',
+                        style: GoogleFonts.getFont('Poppins',
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                           color: Color(0xFFFFFFFF),

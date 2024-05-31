@@ -10,8 +10,8 @@ class Petunjuk extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           color: Colors.white,
-          onPressed: () {
-            Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
+           onPressed: () {
+            Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (Route<dynamic> route) => false);
           },
         ),
         title: Padding(
