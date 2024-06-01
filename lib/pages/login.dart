@@ -23,8 +23,8 @@ class _LoginState extends State<Login> {
 
     if (user != null) {
       _showAlertDialog('Login Berhasil', 'Selamat datang, ${user.namaLengkap}!', true);
-      // Simpan status login
-      await _saveLoginStatus(true);
+      // Simpan status login dan nis_nip
+      await _saveLoginStatus(true, nisNip);
     } else {
       _showAlertDialog('Login Gagal', 'Periksa kembali NIS/NIP dan Password.', false);
     }
@@ -56,9 +56,10 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Future<void> _saveLoginStatus(bool isLoggedIn) async {
+  Future<void> _saveLoginStatus(bool isLoggedIn, String nisNip) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', isLoggedIn);
+    await prefs.setString('nisNip', nisNip); // Simpan nisNip ke SharedPreferences
   }
 
   @override
