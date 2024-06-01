@@ -3,6 +3,7 @@ import 'package:flutter_app/model/api_service.dart';
 import 'package:flutter_app/model/user.dart';
 import 'package:flutter_app/pages/dashboard.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -22,6 +23,8 @@ class _LoginState extends State<Login> {
 
     if (user != null) {
       _showAlertDialog('Login Berhasil', 'Selamat datang, ${user.namaLengkap}!', true);
+      // Simpan status login
+      await _saveLoginStatus(true);
     } else {
       _showAlertDialog('Login Gagal', 'Periksa kembali NIS/NIP dan Password.', false);
     }
@@ -40,9 +43,9 @@ class _LoginState extends State<Login> {
               onPressed: () {
                 Navigator.of(context).pop();
                 if (isSuccess) {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => Dashboard()),
+                    MaterialPageRoute(builder: (context) => Dashboard()), // Gunakan pushReplacement agar tidak bisa kembali ke halaman login
                   );
                 }
               },
@@ -51,6 +54,11 @@ class _LoginState extends State<Login> {
         );
       },
     );
+  }
+
+  Future<void> _saveLoginStatus(bool isLoggedIn) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', isLoggedIn);
   }
 
   @override

@@ -228,7 +228,8 @@ class Dashboard extends StatelessWidget {
                             BoxShadow(
                               color: Color(0x40000000),
                               offset: Offset(0, 4),
-                              blurRadius: 2,
+                              blurRadius: 
+2,
                             ),
                           ],
                         ),
@@ -280,9 +281,31 @@ class Dashboard extends StatelessWidget {
                 ),
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => Login()),
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text("Yakin Ingin Keluar?"),
+                          content: Text("Anda yakin ingin keluar dari aplikasi?"),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Batal"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(builder: (context) => Login()),
+                                  (Route<dynamic> route) => false,
+                                );
+                              },
+                              child: Text("Keluar"),
+                            ),
+                          ],
+                        );
+                      },
                     );
                   },
                   child: Container(
