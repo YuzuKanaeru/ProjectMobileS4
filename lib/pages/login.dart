@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/model/api_service.dart';
-import 'package:flutter_app/model/user.dart';
-import 'package:flutter_app/pages/dashboard.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_app/model/api_service.dart';
+import 'package:flutter_app/model/user.dart';
+import 'dashboard.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -23,7 +23,6 @@ class _LoginState extends State<Login> {
 
     if (user != null) {
       _showAlertDialog('Login Berhasil', 'Selamat datang, ${user.namaLengkap}!', true);
-      // Simpan status login dan nis_nip
       await _saveLoginStatus(true, nisNip);
     } else {
       _showAlertDialog('Login Gagal', 'Periksa kembali NIS/NIP dan Password.', false);
@@ -45,7 +44,7 @@ class _LoginState extends State<Login> {
                 if (isSuccess) {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => Dashboard()), // Gunakan pushReplacement agar tidak bisa kembali ke halaman login
+                    MaterialPageRoute(builder: (context) => Dashboard()),
                   );
                 }
               },
@@ -59,7 +58,7 @@ class _LoginState extends State<Login> {
   Future<void> _saveLoginStatus(bool isLoggedIn, String nisNip) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', isLoggedIn);
-    await prefs.setString('nisNip', nisNip); // Simpan nisNip ke SharedPreferences
+    await prefs.setString('nisNip', nisNip);
   }
 
   @override
@@ -163,7 +162,7 @@ class _LoginState extends State<Login> {
                         controller: _nisNipController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Masukkan Nomer Induk Siswa',
+                          hintText: 'Masukkan Nomor Induk Siswa',
                         ),
                       ),
                     ),
@@ -239,7 +238,8 @@ class _LoginState extends State<Login> {
                     child: Center(
                       child: Text(
                         'Login',
-                        style: GoogleFonts.getFont('Poppins',
+                        style: GoogleFonts.getFont(
+                          'Poppins',
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                           color: Color(0xFFFFFFFF),

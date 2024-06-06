@@ -3,21 +3,21 @@ import 'dart:convert';
 import 'user.dart';
 
 class ApiService {
-  final String baseUrl = 'https://vote.sipkopi.com/api/akun/tampil/';
+  final String baseUrl = 'https://sivosis.my.id/api/akun/tampil';
 
   Future<User?> login(String nisNip, String password) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl$nisNip'));
+      final response = await http.get(Uri.parse(baseUrl));
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> userMap = jsonDecode(response.body);
+        List<dynamic> users = json.decode(response.body);
 
-        
-        if (userMap['pass'] == password) {
-          return User.fromJson(userMap);
-        } else {
-          print('Password does not match');
+        for (var user in users) {
+          if (user['nis_nip'] == nisNip && user['pass'] == password) {
+            return User.fromJson(user);
+          }
         }
+        print('User not found or incorrect password');
       } else {
         print('Failed to load user data. Status code: ${response.statusCode}');
       }

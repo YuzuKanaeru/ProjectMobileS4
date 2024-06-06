@@ -11,7 +11,7 @@ class DaftarKandidat extends StatefulWidget {
 
 class _DaftarKandidatState extends State<DaftarKandidat> {
   Future<List<Kandidat>> fetchKandidat() async {
-    final response = await http.get(Uri.parse('https://vote.sipkopi.com/api/kandidat/tampil'));
+    final response = await http.get(Uri.parse('https://sivosis.my.id/api/kandidat/tampil'));
 
     if (response.statusCode == 200) {
       Map<String, dynamic> data = json.decode(response.body);

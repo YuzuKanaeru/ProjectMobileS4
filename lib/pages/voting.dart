@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_app/model/kandidat.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Voting extends StatefulWidget {
   @override
@@ -10,9 +11,27 @@ class Voting extends StatefulWidget {
 }
 
 class _VotingState extends State<Voting> {
+  late String _nisNip; // Tambah variabel untuk menyimpan nisnip
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNisNip();
+  }
+
+  Future<void> _loadNisNip() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? nisNip = prefs.getString('nisNip');
+    if (nisNip != null) {
+      setState(() {
+        _nisNip = nisNip;
+      });
+    }
+  }
+
   Future<List<Kandidat>> fetchKandidat() async {
     final response =
-        await http.get(Uri.parse('https://vote.sipkopi.com/api/kandidat/tampil'));
+        await http.get(Uri.parse('https://sivosis.my.id/api/kandidat/tampil'));
 
     if (response.statusCode == 200) {
       Map<String, dynamic> data = json.decode(response.body);
@@ -32,16 +51,16 @@ class _VotingState extends State<Voting> {
           content: Text('Yakin ingin memilih kandidat ini?'),
           actions: <Widget>[
             TextButton(
-              child: Text('Batal'),
-              onPressed: () {
-                Navigator.of(context).pop(false); // Close dialog and return false
-              },
-            ),
-            TextButton(
               child: Text('Iya'),
               onPressed: () {
                 Navigator.of(context).pop(true); // Close dialog and return true
                 _voteForCandidate(kandidat); // Call function to vote for candidate
+              },
+            ),
+            TextButton(
+              child: Text('Batal'),
+              onPressed: () {
+                Navigator.of(context).pop(false); // Close dialog and return false
               },
             ),
           ],
@@ -52,18 +71,56 @@ class _VotingState extends State<Voting> {
     if (confirm != null && confirm) {
       // Perform action if user confirms
       // For example, send voting data to API
-      print('Vote for ${kandidat.namaKetua}');
+      _voteForCandidate(kandidat);
     }
   }
 
   Future<void> _voteForCandidate(Kandidat kandidat) async {
-    // Simulate voting process
-    await Future.delayed(Duration(seconds: 2));
+  // Kirim data voting menggunakan HTTP POST request
+  final response = await http.post(
+    Uri.parse('https://sivosis.my.id/api/voting/tambah'),
+    body: jsonEncode({'nis_nip': _nisNip, 'id_kandidat': kandidat.id}),
+    headers: {'Content-Type': 'application/json'},
+  );
 
-    // Navigate back to dashboard after voting
-    Navigator.pushNamedAndRemoveUntil(
-        context, '/dashboard', (Route<dynamic> route) => false);
+  if (response.statusCode == 200) {
+    // Berhasil melakukan voting
+    print('Vote for ${kandidat.id} berhasil.');
+    // Tampilkan notifikasi bahwa voting berhasil
+    _showSuccessNotification();
+  } else {
+    // Gagal melakukan voting
+    print('Vote for ${kandidat.id} gagal.');
+    // Tampilkan notifikasi bahwa voting gagal
+    _showFailureNotification();
   }
+
+  // Navigate back to dashboard after voting
+  Navigator.pushNamedAndRemoveUntil(
+    context,
+    '/dashboard',
+    (Route<dynamic> route) => false,
+  );
+}
+
+void _showSuccessNotification() {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Voting gagal.'),
+      duration: Duration(seconds: 2),
+    ),
+  );
+}
+
+void _showFailureNotification() {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Voting berhasil.'),
+      duration: Duration(seconds: 2),
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -75,15 +132,17 @@ class _VotingState extends State<Voting> {
           color: Colors.white,
           onPressed: () {
             Navigator.pushNamedAndRemoveUntil(
-                context, '/dashboard', (Route<dynamic> route) => false);
+              context,
+              '/dashboard',
+              (Route<dynamic> route) => false,
+            );
           },
         ),
         title: Padding(
           padding: const EdgeInsets.only(left: 16.0),
           child: Text(
             'Voting Kandidat',
-            style: GoogleFonts.getFont(
-              'Poppins',
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 20,
               color: Colors.white,
@@ -165,8 +224,7 @@ class _VotingState extends State<Voting> {
                   children: [
                     Text(
                       kandidat.namaKetua,
-                      style: GoogleFonts.getFont(
-                        'Poppins',
+                      style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 18,
                         color: Color(0xFF000000),
@@ -175,8 +233,7 @@ class _VotingState extends State<Voting> {
                     SizedBox(height: 10),
                     Text(
                       '${kandidat.namaWakil}',
-                      style: GoogleFonts.getFont(
-                        'Poppins',
+                      style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 18,
                         color: Color(0xFF000000),
