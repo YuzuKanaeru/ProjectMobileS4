@@ -1,6 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Import SvgPicture
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_app/model/votingresult.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+Future<List<VotingResult>> fetchVotingResults() async {
+  final response = await http.get(Uri.parse('https://sivosis.my.id/api/voting/total'));
+
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    final votingData = data['Data Voting'] as List;
+    return votingData.map((json) => VotingResult.fromJson(json)).toList();
+  } else {
+    throw Exception('Failed to load voting results');
+  }
+}
 
 class HasilVoting extends StatelessWidget {
   @override
@@ -11,7 +27,7 @@ class HasilVoting extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           color: Colors.white,
-           onPressed: () {
+          onPressed: () {
             Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (Route<dynamic> route) => false);
           },
         ),
@@ -28,81 +44,69 @@ class HasilVoting extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Color(0xFFFFFFFF),
-          ),
-          child: Container(
-            padding: EdgeInsets.fromLTRB(20, 30, 20, 152),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  margin: EdgeInsets.fromLTRB(0, 0, 0, 135),
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0, 0, 25, 0),
-                          
-                        ),
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0, 0, 0, 2),
-                          child: Text(
-                            'Hasil Voting',
-                            style: GoogleFonts.getFont(
-                              'Poppins',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 25,
-                              color: Color(0xFFFFFFFF),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+      body: FutureBuilder<List<VotingResult>>(
+        future: fetchVotingResults(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No data available'));
+          } else {
+            final results = snapshot.data!;
+            return SingleChildScrollView(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color(0xFFFFFFFF),
                 ),
-                Container(
-                  margin: EdgeInsets.fromLTRB(0, 0, 0, 103),
-                  child: SizedBox(
-                    width: 300,
-                    height: 301,
-                    child: SvgPicture.network(
-                      'assets/vectors/group_8_x2.svg',
+                padding: EdgeInsets.fromLTRB(20, 30, 20, 152),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                      ),
                     ),
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.fromLTRB(0, 0, 183.7, 0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        margin: EdgeInsets.fromLTRB(0, 0, 3.7, 7),
+                    SizedBox(
+                      height: 300,
+                      child: PieChart(
+                        PieChartData(
+                          sections: results.map((result) {
+                            return PieChartSectionData(
+                              color: getColor(result.idKandidat),
+                              value: result.totalVote.toDouble(),
+                              title: '${result.totalVote}',
+                              radius: 50,
+                              titleStyle: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            );
+                          }).toList(),
+                          sectionsSpace: 0,
+                          centerSpaceRadius: 40,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    ...results.map((result) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              margin: EdgeInsets.fromLTRB(0, 2, 14, 1),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFFF0000),
-                                ),
-                                child: Container(
-                                  width: 20,
-                                  height: 20,
-                                ),
-                              ),
+                              width: 20,
+                              height: 20,
+                              color: getColor(result.idKandidat),
                             ),
+                            SizedBox(width: 10),
                             Text(
-                              'Kandidat 1',
+                              '${result.namaKetua} & ${result.namaWakil}',
                               style: GoogleFonts.getFont(
                                 'Poppins',
                                 fontWeight: FontWeight.w500,
@@ -112,72 +116,28 @@ class HasilVoting extends StatelessWidget {
                             ),
                           ],
                         ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.fromLTRB(0, 0, 0.3, 7),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 2, 14, 1),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFFBE200),
-                                ),
-                                child: Container(
-                                  width: 20,
-                                  height: 20,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              'Kandidat 2',
-                              style: GoogleFonts.getFont(
-                                'Poppins',
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15,
-                                color: Color(0xFF000000),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            margin: EdgeInsets.fromLTRB(0, 2, 14, 1),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Color(0xBF24FF00),
-                              ),
-                              child: Container(
-                                width: 20,
-                                height: 20,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            'Kandidat 3',
-                            style: GoogleFonts.getFont(
-                              'Poppins',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
-                              color: Color(0xFF000000),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                      );
+                    }).toList(),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ),
+              ),
+            );
+          }
+        },
       ),
     );
+  }
+
+  Color getColor(String idKandidat) {
+    switch (idKandidat) {
+      case '1':
+        return Color(0xFFFF0000);
+      case '2':
+        return Color(0xFFFBE200);
+      case '3':
+        return Color(0xBF24FF00);
+      default:
+        return Colors.grey;
+    }
   }
 }
