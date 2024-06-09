@@ -14,6 +14,7 @@ class _LoginState extends State<Login> {
   final TextEditingController _nisNipController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final ApiService apiService = ApiService();
+  bool _obscureText = true;
 
   Future<void> _login() async {
     final String nisNip = _nisNipController.text;
@@ -207,10 +208,20 @@ class _LoginState extends State<Login> {
                       padding: EdgeInsets.symmetric(horizontal: 16.0),
                       child: TextField(
                         controller: _passwordController,
-                        obscureText: true,
+                        obscureText: _obscureText,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: 'Masukkan Password',
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureText ? Icons.visibility : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureText = !_obscureText;
+                              });
+                            },
+                          ),
                         ),
                       ),
                     ),

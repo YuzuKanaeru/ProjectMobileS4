@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_app/model/votingresult.dart';
@@ -110,7 +109,7 @@ class HasilVoting extends StatelessWidget {
                               style: GoogleFonts.getFont(
                                 'Poppins',
                                 fontWeight: FontWeight.w500,
-                                fontSize: 15,
+                                fontSize: 14,
                                 color: Color(0xFF000000),
                               ),
                             ),

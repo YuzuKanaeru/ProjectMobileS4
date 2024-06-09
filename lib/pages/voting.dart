@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_app/model/kandidat.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -69,8 +68,6 @@ class _VotingState extends State<Voting> {
     );
 
     if (confirm != null && confirm) {
-      // Perform action if user confirms
-      // For example, send voting data to API
       _voteForCandidate(kandidat);
     }
   }
