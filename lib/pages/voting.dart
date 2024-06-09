@@ -10,7 +10,7 @@ class Voting extends StatefulWidget {
 }
 
 class _VotingState extends State<Voting> {
-  late String _nisNip; // Tambah variabel untuk menyimpan nisnip
+  late String _nisNip;
 
   @override
   void initState() {
@@ -52,14 +52,14 @@ class _VotingState extends State<Voting> {
             TextButton(
               child: Text('Iya'),
               onPressed: () {
-                Navigator.of(context).pop(true); // Close dialog and return true
-                _voteForCandidate(kandidat); // Call function to vote for candidate
+                Navigator.of(context).pop(true); 
+                _voteForCandidate(kandidat); 
               },
             ),
             TextButton(
               child: Text('Batal'),
               onPressed: () {
-                Navigator.of(context).pop(false); // Close dialog and return false
+                Navigator.of(context).pop(false); 
               },
             ),
           ],
@@ -73,7 +73,6 @@ class _VotingState extends State<Voting> {
   }
 
   Future<void> _voteForCandidate(Kandidat kandidat) async {
-  // Kirim data voting menggunakan HTTP POST request
   final response = await http.post(
     Uri.parse('https://sivosis.my.id/api/voting/tambah'),
     body: jsonEncode({'nis_nip': _nisNip, 'id_kandidat': kandidat.id}),
@@ -81,18 +80,13 @@ class _VotingState extends State<Voting> {
   );
 
   if (response.statusCode == 200) {
-    // Berhasil melakukan voting
     print('Vote for ${kandidat.id} berhasil.');
-    // Tampilkan notifikasi bahwa voting berhasil
     _showSuccessNotification();
   } else {
-    // Gagal melakukan voting
     print('Vote for ${kandidat.id} gagal.');
-    // Tampilkan notifikasi bahwa voting gagal
     _showFailureNotification();
   }
 
-  // Navigate back to dashboard after voting
   Navigator.pushNamedAndRemoveUntil(
     context,
     '/dashboard',
@@ -117,7 +111,6 @@ void _showFailureNotification() {
     ),
   );
 }
-
 
   @override
   Widget build(BuildContext context) {
